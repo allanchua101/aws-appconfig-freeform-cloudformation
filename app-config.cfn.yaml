@@ -1,0 +1,171 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template used for showcasing AWS AppConfig feature flags
+
+Parameters:
+  AppName:
+    Type: String
+    Description: "Name of application associated with AppConfig instance."
+    AllowedPattern: ".+"
+
+  CostCenter:
+    Type: String
+    Description: "Department responsible for billing of AppConfig instance."
+    AllowedPattern: ".+"
+
+Resources:
+  AppConfigInstance:
+    Type: AWS::AppConfig::Application
+    Properties:
+      Name: !Ref AppName
+      Description: !Sub "AppConfig instance containing all configuration for ${AppName}"
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  # Environments
+  DevEnvironment:
+    Type: AWS::AppConfig::Environment
+    Properties:
+      Name: "dev"
+      Description: !Sub "Dev environment for ${AppName}"
+      ApplicationId: !Ref AppConfigInstance
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: ENVIRONMENT
+          Value: "dev"
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  UatEnvironment:
+    Type: AWS::AppConfig::Environment
+    Properties:
+      Name: "uat"
+      Description: !Sub "UAT environment for ${AppName}"
+      ApplicationId: !Ref AppConfigInstance
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: ENVIRONMENT
+          Value: "uat"
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  PrdEnvironment:
+    Type: AWS::AppConfig::Environment
+    Properties:
+      Name: "prd"
+      Description: !Sub "PRD environment for ${AppName}"
+      ApplicationId: !Ref AppConfigInstance
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: ENVIRONMENT
+          Value: "prd"
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  # Configuration Profile
+  EnabledInferenceConfigProfile:
+    Type: AWS::AppConfig::ConfigurationProfile
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      Name: !Sub "enabled-inference-profile"
+      Description: "Configuration profile for enabled inference"
+      LocationUri: hosted
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: ENVIRONMENT
+          Value: "prd"
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  DisabledInferenceConfigProfile:
+    Type: AWS::AppConfig::ConfigurationProfile
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      Name: !Sub "disabled-inference-profile"
+      Description: "Configuration profile for disabled inference"
+      LocationUri: hosted
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: ENVIRONMENT
+          Value: "prd"
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  # Feature Flags
+  EnableMLInference:
+    Type: AWS::AppConfig::HostedConfigurationVersion
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      ConfigurationProfileId: !Ref EnabledInferenceConfigProfile
+      Description: "Freeform config for toggling ML inferencing routines"
+      Content: !Sub |
+        {
+          "enableInference": true
+        }
+      ContentType: "application/json"
+
+  DisableMLInference:
+    Type: AWS::AppConfig::HostedConfigurationVersion
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      ConfigurationProfileId: !Ref DisabledInferenceConfigProfile
+      Description: "Freeform config used for toggling ML inferencing routines"
+      Content: !Sub |
+        {
+          "enableInference": false
+        }
+      ContentType: "application/json"
+
+  # Deployment Strategies
+  QuickSwapDeploymentStrategy:
+    Type: AWS::AppConfig::DeploymentStrategy
+    Properties:
+      Name: "AllAtOnce.ImmediateSwap"
+      Description: "Deployment strategy used for immediate swapping of configuration"
+      DeploymentDurationInMinutes: 0
+      FinalBakeTimeInMinutes: 0
+      GrowthFactor: 100
+      GrowthType: LINEAR
+      ReplicateTo: NONE
+      Tags:
+        - Key: COST_CENTER
+          Value: !Ref CostCenter
+        - Key: ENVIRONMENT
+          Value: "prd"
+        - Key: APP_NAME
+          Value: !Ref AppName
+
+  # Deploy to environments
+  DevConfigDeployment:
+    Type: AWS::AppConfig::Deployment
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      ConfigurationProfileId: !Ref DisabledInferenceConfigProfile
+      ConfigurationVersion: !Ref DisableMLInference
+      DeploymentStrategyId: !Ref QuickSwapDeploymentStrategy
+      EnvironmentId: !Ref DevEnvironment
+
+  UatConfigDeployment:
+    Type: AWS::AppConfig::Deployment
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      ConfigurationProfileId: !Ref DisabledInferenceConfigProfile
+      ConfigurationVersion: !Ref DisableMLInference
+      DeploymentStrategyId: !Ref QuickSwapDeploymentStrategy
+      EnvironmentId: !Ref UatEnvironment
+
+  PrdConfigDeployment:
+    Type: AWS::AppConfig::Deployment
+    Properties:
+      ApplicationId: !Ref AppConfigInstance
+      ConfigurationProfileId: !Ref EnabledInferenceConfigProfile
+      ConfigurationVersion: !Ref EnableMLInference
+      DeploymentStrategyId: !Ref QuickSwapDeploymentStrategy
+      EnvironmentId: !Ref PrdEnvironment
