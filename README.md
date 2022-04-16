@@ -1,2 +1,3 @@
-# aws-appconfig-freeform-cloudformation
-Sample repository for provisioning AWS AppConfig freeform configurations using CloudFormation.
+# AWS AppConfig Freeform CloudFormation
+
+Sample repository for automated provisioning of AWS AppConfig freeform configurations using CloudFormation.
