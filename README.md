@@ -7,7 +7,7 @@ Sample repository for automated provisioning of AWS AppConfig freeform configura
 - Unix Environment
 - Shell
 - AWS CLI
-- Name profile configured in your machine
+- AWS CLI named profile
 
 ### Deploying the CloudFormation stack
 
