@@ -4,7 +4,7 @@ Sample repository for automated provisioning of AWS AppConfig freeform configura
 
 ### Pre-requisites
 
-- Working linux environment
+- Unix Environment
 - Shell
 - AWS CLI
 - Name profile configured in your machine
