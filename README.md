@@ -20,3 +20,8 @@ chmod +x ./provision.sh
 # Trigger and pass named profile
 ./provision "my-aws-named-profile"
 ```
+
+### Related Articles
+
+- [Provisioning Freeform Configuration via AWS AppConfig & CloudFormation](https://itnext.io/provisioning-freeform-configuration-via-aws-appconfig-cloudformation-faed56b9e9f4)
+- [An introduction to Feature Toggles and AWS AppConfig](https://towardsaws.com/an-introduction-to-feature-toggles-aws-appconfig-aa6351872fd6)
