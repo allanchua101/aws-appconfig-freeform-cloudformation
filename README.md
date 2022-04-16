@@ -18,7 +18,7 @@ Sample repository for automated provisioning of AWS AppConfig freeform configura
 chmod +x ./provision.sh
 
 # Trigger and pass named profile
-./provision "my-aws-named-profile"
+./provision.sh "my-aws-named-profile"
 ```
 
 ### Related Articles
